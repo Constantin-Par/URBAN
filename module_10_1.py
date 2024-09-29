@@ -8,7 +8,7 @@ def write_words(word_count, file_name):
         for i in range(1, word_count + 1):
             current_file.write(f'Какое-то слово № {i}\n')
             sleep(0.1)
-        current_file.write(f'Завершилась запись в файл {file_name}')
+        print(f'Завершилась запись в файл {file_name}')
 
 
 time_start = datetime.now()
