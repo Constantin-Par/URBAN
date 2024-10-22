@@ -1,3 +1,7 @@
+class MyClass:
+    my_attr = 2
+
+
 def introspection_info(obj):
     attributes = [attr for attr in dir(obj) if not callable(getattr(obj, attr))]
     methods = [method for method in dir(obj) if callable(getattr(obj, method))]
@@ -5,14 +9,34 @@ def introspection_info(obj):
         'type': type(obj),
         'attributes': attributes,
         'methods': methods,
-        'module': type(obj).__module__,
+        'module': obj.__module__ if callable(obj) else type(obj).__module__,
     }
     return obj_info
 
 
 if __name__ == '__main__':
-    number_info = introspection_info(42)
-    print(number_info['type'])
-    print(number_info['attributes'])
-    print(number_info['methods'])
-    print(number_info['module'])
+    obj = 42
+    info = introspection_info(obj)
+    print('Объект:', obj)
+    print(info['type'])
+    print(info['attributes'])
+    print(info['methods'])
+    print(info['module'])
+    print()
+
+    obj = introspection_info
+    info = introspection_info(obj)
+    print('Объект:', obj)
+    print(info['type'])
+    print(info['attributes'])
+    print(info['methods'])
+    print(info['module'])
+    print()
+
+    obj = MyClass
+    info = introspection_info(obj)
+    print('Объект:', obj)
+    print(info['type'])
+    print(info['attributes'])
+    print(info['methods'])
+    print(info['module'])
