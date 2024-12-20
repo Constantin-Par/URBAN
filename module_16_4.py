@@ -1,39 +1,59 @@
 from fastapi import FastAPI
+from fastapi import HTTPException
+from pydantic import BaseModel
 
-import colorama
-from colorama import Fore, Style
-colorama.init(autoreset=True)
+
+class User(BaseModel):
+    id: int
+    username: str
+    age: int
 
 
 app = FastAPI()
-users = {"1": "Имя: Example, возраст: 18"}
+users = []
 
 
 @app.get("/users")
-async def get_users() -> dict:
+async def get_users() -> list:
     return users
 
 
 @app.post("/user/{username}/{age}")
 async def post_user(username: str, age: int) -> str:
-    user_id = str(int(max(users, key=int)) + 1)
-    users[user_id] = f"Имя: {username}, возраст: {age}"
-    return f"User {user_id} registered."
+    user = User(id=len(users) + 1, username=username, age=age)
+    users.append(user)
+    return f"User {user.id} {user.username} registered."
+
+# @app.post("/user/")
+# async def post_user(user: User) -> str:
+#     user.id = len(users) + 1
+#     users.append(user)
+#     return f"User {user.id} {user.username} registered."
 
 
 @app.put("/user/{user_id}/{username}/{age}")
-async def put_user(user_id: str, username: str, age: int) -> str:
-    users[user_id] = f"Имя: {username}, возраст: {age}"
-    return f"User {user_id} updated."
+async def put_user(user_id: int, username: str, age: int) -> str:
+    try:
+        user = users[user_id - 1]
+        username_old = user.username
+        age_old = user.age
+        user.username = username
+        user.age = age
+        return f"User {user_id - 1} updated: {username_old}->{username} {age_old}->{age}"
+    except IndexError:
+        raise HTTPException(status_code=404, detail="User was not found")
 
 
 @app.delete("/user/{user_id}")
-async def delete_user(user_id: str) -> str:
-    del users[user_id]
-    return f"User {user_id} deleted."
+async def delete_user(user_id: int) -> str:
+    try:
+        user = users.pop(user_id - 1)
+        username = user.username
+        return f"User {user_id - 1} {username} deleted."
+    except IndexError:
+        raise HTTPException(status_code=404, detail="User was not found")
 
-# uvicorn module_16_3:app --reload
-
+# uvicorn module_16_4:app --reload
+# http://127.0.0.1:8000/docs
 # tasklist | find "uvicorn"
-
 # taskkill /PID <PID> /F
