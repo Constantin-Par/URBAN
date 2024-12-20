@@ -1,6 +1,6 @@
-from fastapi import FastAPI
-from fastapi import HTTPException
+from fastapi import FastAPI, Request, HTTPException
 from pydantic import BaseModel
+from fastapi.templating import Jinja2Templates
 
 
 class User(BaseModel):
@@ -9,8 +9,15 @@ class User(BaseModel):
     age: int
 
 
-app = FastAPI()
+app = FastAPI(debug=True)
+# templates = Jinja2Templates(directory="module_16_5\\templates")
+templates = Jinja2Templates(directory="templates")
 users = []
+
+
+@app.get("/")
+async def root(request: Request):
+    return templates.TemplateResponse("users.html", {"request": request, "users": users})
 
 
 @app.get("/users")
@@ -18,11 +25,17 @@ async def get_users() -> list:
     return users
 
 
+@app.get("/user/{user_id}")
+async def get_user(request: Request, user_id: int):
+    return templates.TemplateResponse("users.html", {"request": request, "user": users[user_id - 1]})
+
+
 @app.post("/user/{username}/{age}")
 async def post_user(username: str, age: int) -> str:
     user = User(id=len(users) + 1, username=username, age=age)
     users.append(user)
     return f"User {user.id} {user.username} registered."
+
 
 # @app.post("/user/")
 # async def post_user(user: User) -> str:
@@ -53,7 +66,7 @@ async def delete_user(user_id: int) -> str:
     except IndexError:
         raise HTTPException(status_code=404, detail="User was not found")
 
-# uvicorn module_16_4:app --reload
+# uvicorn module_16_5.module_16_5:app
 # http://127.0.0.1:8000/docs
 # tasklist | find "uvicorn"
 # taskkill /PID <PID> /F
